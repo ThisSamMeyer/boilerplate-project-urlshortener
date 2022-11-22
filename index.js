@@ -46,12 +46,6 @@ const urlSchema = new Schema ({
 
 let URL = mongoose.model("URL", urlSchema);
 
-// Short URL generator
-const generateShort = async () => {
-  let short = await URL.countDocuments();
-  return short++;
-};
-
 // Function to format URL for dns.lookup
 const formatURL = url => {
   if (/^https:\/\//.test(url)) {
@@ -78,7 +72,6 @@ app.post('/api/shorturl', (req, res) => {
       })
       .then(data => {
         if (data) {
-          console.log(data)
           res.json({
             "original_url": data.url,
             "short_url": data.shortUrl
@@ -91,7 +84,6 @@ app.post('/api/shorturl', (req, res) => {
               let newURL = new URL({ url: originalUrl, shortUrl: data });
               newURL.save()
                 .then(data => {
-                  console.log(data)
                   res.json({ 
                     "original_url": data.url,
                     "short_url": data.shortUrl
@@ -117,10 +109,6 @@ app.get('/api/shorturl/:short_url', (req, res) => {
     })
     .then(data => {
       res.redirect(data.url);
-      // res.json({
-      //   "redirect_url": data.url,
-      //   "short_requested": data.shortUrl
-      // })
     })
     .catch(err => {
       console.error(err)
