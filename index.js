@@ -65,6 +65,7 @@ app.post('/api/shorturl', (req, res) => {
   
   let originalUrl = req.body.url;
   let formattedUrl = formatURL(originalUrl);
+  originalUrl = 'https://' + formattedUrl;
 
   dns.resolve(formattedUrl, (err, records) => {
     if (err) {
@@ -107,15 +108,16 @@ app.post('/api/shorturl', (req, res) => {
 });
 
 // Redirect when user visits /api/shorturl/<short_url>
-app.get('/api/shorturl/:short_url', (req, res) => {
+app.get('/api/shorturl/:shorturl', (req, res) => {
 
-  let short = parseInt(req.params.short_url, 10);
+  let short = parseInt(req.params.shorturl, 10);
 
   UrlShort
     .findOne({
       short_url: short
     })
     .then(data => {
+
       res.redirect(data.original_url);
     })
     .catch(err => {
