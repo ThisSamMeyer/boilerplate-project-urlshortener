@@ -32,8 +32,10 @@ app.get('/api/hello', function(req, res) {
 // Define mongoose schema and create model
 const Schema = mongoose.Schema;
 const urlSchema = new Schema ({
-  original_url: { type: String, required: true, lowercase: true },
-  short_url: { type: Number, required: true, unique: true }
+  // original_url: { type: String, required: true, lowercase: true },
+  // short_url: { type: Number, required: true, unique: true }
+  original_url: String,
+  short_url: Number
 });
 let UrlShort = mongoose.model("UrlShort", urlSchema);
 
