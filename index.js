@@ -33,7 +33,7 @@ app.get('/api/hello', function(req, res) {
 const Schema = mongoose.Schema;
 const urlSchema = new Schema ({
   original_url: { type: String, required: true, unique: true, lowercase: true },
-  short_url: String
+  short_url: { type: Number, required: true, unique: true }
 });
 let UrlShort = mongoose.model("UrlShort", urlSchema);
 
@@ -107,11 +107,11 @@ app.post('/api/shorturl', (req, res) => {
 // Redirect when user visits /api/shorturl/<short_url>
 app.get('/api/shorturl/:short_url', (req, res) => {
 
-  // console.log(typeof(req.params.short_url))
+  let short = parseInt(req.params.short_url, 10);
 
   UrlShort
     .findOne({
-      short_url: req.params.short_url
+      short_url: short
     })
     .then(data => {
       res.redirect(data.original_url);
