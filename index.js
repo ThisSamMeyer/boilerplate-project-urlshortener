@@ -12,6 +12,7 @@ app.use(cors());
 
 // Use body-parser to parse POST requests
 let bodyParser = require("body-parser");
+const { type } = require('os');
 app.use(bodyParser.urlencoded({ extended: false } ));
 
 // Connect to mongoDB
@@ -32,7 +33,7 @@ app.get('/api/hello', function(req, res) {
 const Schema = mongoose.Schema;
 const urlSchema = new Schema ({
   original_url: { type: String, required: true, unique: true, lowercase: true },
-  short_url: Number
+  short_url: String
 });
 let UrlShort = mongoose.model("UrlShort", urlSchema);
 
@@ -105,6 +106,9 @@ app.post('/api/shorturl', (req, res) => {
 
 // Redirect when user visits /api/shorturl/<short_url>
 app.get('/api/shorturl/:short_url', (req, res) => {
+
+  // console.log(typeof(req.params.short_url))
+
   UrlShort
     .findOne({
       short_url: req.params.short_url
