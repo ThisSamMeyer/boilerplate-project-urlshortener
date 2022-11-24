@@ -63,7 +63,6 @@ app.post('/api/shorturl', (req, res) => {
   let originalUrl = req.body.url;
   let formattedUrl = formatURL(originalUrl);
 
-
   dns.resolve(formattedUrl, (err, records) => {
     if (err) {
       res.json({"error": "invalid url"});      // if invalid, res error
@@ -108,7 +107,7 @@ app.post('/api/shorturl', (req, res) => {
 app.get('/api/shorturl/:short_url', (req, res) => {
   UrlShort
     .findOne({
-      short_url: Number(req.params.short_url)
+      short_url: req.params.short_url
     })
     .then(data => {
       res.redirect(data.original_url);
