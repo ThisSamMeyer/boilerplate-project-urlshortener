@@ -113,16 +113,21 @@ app.get('/api/shorturl/:shorturl', (req, res) => {
   let short = req.params.shorturl;
 
   UrlShort
-    .findOne({
-      short_url: short
+    .findOne({ short_url: short }, (err, result) => {
+      if (err) {
+        console.error(err);
+      } else {
+        console.log(result)
+        res.redirect(result.original_url)
+      }
     })
-    .then(data => {
-      console.log(data)
-      res.redirect(data.original_url);
-    })
-    .catch(err => {
-      console.error(err)
-    })
+    // .then(data => {
+    //   console.log(data)
+    //   res.redirect(data.original_url);
+    // })
+    // .catch(err => {
+    //   console.error(err)
+    // })
 });
 
 app.listen(port, function() {
