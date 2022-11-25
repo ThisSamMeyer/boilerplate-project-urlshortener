@@ -91,12 +91,11 @@ app.post('/api/shorturl', (req, res) => {
 
             addUrl.save((saveErr, urlSaved) => {
               if (saveErr) {
-                console.log('save() error')
-                console.error(saveErr)
+                res.send('save() error');
               }
               res.json({
-                original_url: urlSaved.original_url,
-                short_url: urlSaved.short_url
+                "original_url": urlSaved.original_url,
+                "short_url": urlSaved.short_url
               });
             }); // addUrl.save()
           }); // Url.coundDocuments()
