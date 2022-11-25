@@ -111,6 +111,7 @@ app.post('/api/shorturl', (req, res) => {
 app.get('/api/shorturl/:shorturl', (req, res) => {
 
   let short = req.params.shorturl;
+  console.log(`requested short: ${short}`)
 
   UrlShort
     .findOne({ short_url: short })
