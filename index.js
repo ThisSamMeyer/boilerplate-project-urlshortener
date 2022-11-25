@@ -65,7 +65,7 @@ app.post('/api/shorturl', (req, res) => {
   
   let originalUrl = req.body.url;
   let formattedUrl = formatURL(originalUrl);
-  originalUrl = 'https://' + formattedUrl;
+  // originalUrl = 'https://' + formattedUrl;
 
   dns.resolve(formattedUrl, (err, records) => {
     if (err) {
