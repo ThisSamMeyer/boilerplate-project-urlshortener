@@ -92,6 +92,7 @@ app.post('/api/shorturl', (req, res) => {
             addUrl.save((saveErr, urlSaved) => {
               if (saveErr) {
                 console.log('save() error')
+                console.error(saveErr)
               }
               res.json({
                 original_url: urlSaved.original_url,
