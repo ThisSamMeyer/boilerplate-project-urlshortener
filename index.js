@@ -1,18 +1,17 @@
-require('dotenv').config();
 const express = require('express');
+require('dotenv').config();
 const cors = require('cors');
 const app = express();
 const mongoose = require('mongoose');
 const dns = require('dns');
+const bodyParser = require("body-parser");
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 
-// Use body-parser to parse POST requests
-let bodyParser = require("body-parser");
-const { type } = require('os');
+// Mount body-parser middleware
 app.use(bodyParser.urlencoded({ extended: false } ));
 
 // Connect to mongoDB
@@ -20,114 +19,95 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 
 app.use('/public', express.static(`${process.cwd()}/public`));
 
+// Define mongoose schema for url records
+const Schema = mongoose.Schema;
+const urlSchema = new Schema ({
+  original_url: {
+    type: String,
+    required: true,
+  },
+  short_url: {
+    type: Number,
+    required: true,
+    default: 0
+  }
+});
+
+// Define mongoose model for url records
+let Url = mongoose.model("Url", urlSchema);
+
+// Send root path file
 app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-// Your first API endpoint
-app.get('/api/hello', function(req, res) {
-  res.json({ greeting: 'hello API' });
-});
+// // Your first API endpoint
+// app.get('/api/hello', function(req, res) {
+//   res.json({ greeting: 'hello API' });
+// });
 
-// Define mongoose schema and create model
-const Schema = mongoose.Schema;
-const urlSchema = new Schema ({
-  // original_url: { type: String, required: true, lowercase: true },
-  // short_url: { type: Number, required: true, unique: true }
-  original_url: String,
-  short_url: String
-});
-let UrlShort = mongoose.model("UrlShort", urlSchema);
+// Define a function that will format user input url to be sent to dns
+const formatUrl = url => {
 
-// Function to format URL for dns.lookup
-const formatURL = url => {
-  if (/^https:\/\//.test(url)) {
-    return url.slice(8);
-  }
-  return url;
+  return url.replace(/^http[s]?:\/\//, '').replace(/\/(.+)?/, '')
+
+  // if (/^https:\/\//.test(url)) {
+  //   return url.slice(8);
+  // }
+  // return url;
 };
 
-// Function to test if input url is valid
-const isValidUrl = (url) => {
-
-  var test = dns.resolve(url, async (err) => {
-    if (err) {
-      return false
-    } else {
-      return true
-    }
-  })
-}
-
-// Get data from POST requests
-// Return original and short url or invalid url
+// Handle post requests from user
 app.post('/api/shorturl', (req, res) => {
-  
-  let originalUrl = req.body.url;
-  let formattedUrl = formatURL(originalUrl);
-  // originalUrl = 'https://' + formattedUrl;
 
-  dns.resolve(formattedUrl, (err, records) => {
-    if (err) {
-      res.json({"error": "invalid url"});      // if invalid, res error
+  let requestUrl = req.body.url;
+
+  let hostname = formatUrl(requestUrl);
+
+  dns.lookup(hostname, (lookupErr, addresses) => {
+    if (lookupErr) {
+      console.log(hostname)
+      console.log('lookup() error')
+    }
+    if (!addresses) {
+      res.json({"error": "invalid url"})
     } else {
-      UrlShort
-      .findOne({                              // if valid, search db for existing record
-        original_url: originalUrl
-      })
-      .then(data => {
-        if (data) {                           // if record exists, return data
-          res.json({
-            "original_url": data.original_url,
-            "short_url": data.short_url
-          });
-        } else {                              // else, create new record
-          UrlShort
-          .countDocuments()                   // generate short url
-          .then(data => {
-            console.log(data);
-            let newUrl = new UrlShort({
-              original_url: originalUrl,
-              short_url: data
-            });
-            newUrl.save();
-            res.json({
-              "original_url": newUrl.original_url,
-              "short_url": newUrl.short_url
-            });
-          })
-          .catch(err => {
-            console.error(err);
-          });
+      Url.findOne({
+        original_url: requestUrl
+      }, (findOneErr, foundUrl) => {
+        if (findOneErr) {
+          console.log('findOne() error');
         }
-      })
-      .catch(err => {
-        console.error(err);
-      });
-    };
-  });
-});
+        if (foundUrl) {
+          res.json({
+            "original_url": foundUrl.original_url,
+            "short_url": foundUrl.short_url
+          });
+        } else {
+          Url.countDocuments((countErr, count) => {
+            if (countErr) {
+              console.log('countDocuments() error')
+            }
+            let addUrl = new Url({
+              original_url: requestUrl,
+              short_url: count + 1
+            });
 
-// Redirect when user visits /api/shorturl/<short_url>
-app.get('/api/shorturl/:short_url', (req, res) => {
-
-  let short = req.params.short_url;
-  console.log(`requested short: ${short}`)
-
-  UrlShort
-    .findOne({ short_url: short })
-    .then(data => {
-      console.log(data)
-      if (data) {
-        res.redirect(data.original_url)
-      } else {
-        res.json({ "error": "invalid url" })
-      }
-    })
-    .catch(err => {
-      console.error(err)
-    })
-});
+            addUrl.save((saveErr, urlSaved) => {
+              if (saveErr) {
+                console.log('save() error')
+              }
+              res.json({
+                original_url: urlSaved.original_url,
+                short_url: urlSaved.short_url
+              });
+            }); // addUrl.save()
+          }); // Url.coundDocuments()
+        } // add new url record block
+      }); // Url.findOne()
+    } // url valid block
+  }); // dns.lookup()
+}); // app.post()
 
 app.listen(port, function() {
   console.log(`Listening on port ${port}`);
