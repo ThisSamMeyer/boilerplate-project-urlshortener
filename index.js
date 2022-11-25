@@ -41,28 +41,24 @@ app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-// // Your first API endpoint
-// app.get('/api/hello', function(req, res) {
-//   res.json({ greeting: 'hello API' });
-// });
+// // Define a function that will format user input url to be sent to dns
+// const formatUrl = url => {
 
-// Define a function that will format user input url to be sent to dns
-const formatUrl = url => {
+//   let formattedUrl = url
+//     .replace(/^http[s]?:\/\//, '')
+//     .replace(/\/(.+)?/, '')
 
-  return url.replace(/^http[s]?:\/\//, '').replace(/\/(.+)?/, '')
-
-  // if (/^https:\/\//.test(url)) {
-  //   return url.slice(8);
-  // }
-  // return url;
-};
+//   return formattedUrl;
+// };
 
 // Handle post requests from user
 app.post('/api/shorturl', (req, res) => {
 
   let requestUrl = req.body.url;
 
-  let hostname = formatUrl(requestUrl);
+  let hostname = requestUrl
+    .replace(/^http[s]?:\/\//, '')
+    .replace(/\/(.+)?/, '');    
 
   dns.lookup(hostname, (lookupErr, addresses) => {
     if (lookupErr) {
