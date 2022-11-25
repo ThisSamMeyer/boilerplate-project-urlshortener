@@ -85,6 +85,7 @@ app.post('/api/shorturl', (req, res) => {
           UrlShort
           .countDocuments()                   // generate short url
           .then(data => {
+            console.log(data);
             let newUrl = new UrlShort({
               original_url: originalUrl,
               short_url: data
