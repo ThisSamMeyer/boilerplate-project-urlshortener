@@ -108,9 +108,9 @@ app.post('/api/shorturl', (req, res) => {
 });
 
 // Redirect when user visits /api/shorturl/<short_url>
-app.get('/api/shorturl/:shorturl', (req, res) => {
+app.get('/api/shorturl/:short_url', (req, res) => {
 
-  let short = req.params.shorturl;
+  let short = req.params.short_url;
   console.log(`requested short: ${short}`)
 
   UrlShort
