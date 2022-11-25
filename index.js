@@ -117,7 +117,7 @@ app.get('/api/shorturl/:shorturl', (req, res) => {
       short_url: short
     })
     .then(data => {
-
+      console.log(data)
       res.redirect(data.original_url);
     })
     .catch(err => {
