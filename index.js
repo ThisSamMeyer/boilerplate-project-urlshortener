@@ -116,7 +116,11 @@ app.get('/api/shorturl/:shorturl', (req, res) => {
     .findOne({ short_url: short })
     .then(data => {
       console.log(data)
-      res.redirect(data.original_url);
+      if (data) {
+        res.redirect(data.original_url)
+      } else {
+        res.json({ "error": "invalid url" })
+      }
     })
     .catch(err => {
       console.error(err)
