@@ -55,7 +55,6 @@ app.get('/', function(req, res) {
 app.post('/api/shorturl', (req, res) => {
 
   let requestUrl = req.body.url;
-  console.log(requestUrl)
 
   let hostname = requestUrl
     .replace(/^http[s]?:\/\//, '')
@@ -75,7 +74,6 @@ app.post('/api/shorturl', (req, res) => {
           console.log('findOne() error');
         }
         if (!foundUrl) {
-          console.log('url not found in db')
           Url.estimatedDocumentCount((countErr, count) => {
             if (countErr) {
               console.log('countDocuments() error')
@@ -94,14 +92,33 @@ app.post('/api/shorturl', (req, res) => {
                   "short_url": urlSaved.short_url
                 });
               }
-
             }); // addUrl.save()
           }); // Url.coundDocuments()
         } // add new url record block
+        else {
+          res.json({
+            "original_url": foundUrl.original_url,
+            "short_url": foundUrl.short_url
+          });
+        }
       }); // Url.findOne()
     } // url valid block
   }); // dns.lookup()
 }); // app.post()
+
+app.get('/api/shorturl/:short_url', (req, res) => {
+  let inputShort = req.params.short_url;
+
+  Url.findOne({
+    short_url: inputShort
+  }, (findOneErr, foundUrl) => {
+    if (findOneErr) {
+      console.log('findOne() error')
+    } else {
+      res.redirect(foundUrl.original_url)
+    }
+  })
+})
 
 app.listen(port, function() {
   console.log(`Listening on port ${port}`);
