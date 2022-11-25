@@ -55,6 +55,7 @@ app.get('/', function(req, res) {
 app.post('/api/shorturl', (req, res) => {
 
   let requestUrl = req.body.url;
+  console.log(requestUrl)
 
   let hostname = requestUrl
     .replace(/^http[s]?:\/\//, '')
@@ -62,7 +63,6 @@ app.post('/api/shorturl', (req, res) => {
 
   dns.lookup(hostname, (lookupErr, addresses) => {
     if (lookupErr) {
-      console.log(hostname)
       console.log('lookup() error')
     }
     if (!addresses) {
@@ -74,13 +74,9 @@ app.post('/api/shorturl', (req, res) => {
         if (findOneErr) {
           console.log('findOne() error');
         }
-        if (foundUrl) {
-          res.json({
-            "original_url": foundUrl.original_url,
-            "short_url": foundUrl.short_url
-          });
-        } else {
-          Url.countDocuments((countErr, count) => {
+        if (!foundUrl) {
+          console.log('url not found in db')
+          Url.estimatedDocumentCount((countErr, count) => {
             if (countErr) {
               console.log('countDocuments() error')
             }
@@ -88,15 +84,17 @@ app.post('/api/shorturl', (req, res) => {
               original_url: requestUrl,
               short_url: count + 1
             });
-
             addUrl.save((saveErr, urlSaved) => {
               if (saveErr) {
-                res.send('save() error');
+                console.error(saveErr);
+                res.json({"error": "save error"});
+              } else {
+                res.json({
+                  "original_url": urlSaved.original_url,
+                  "short_url": urlSaved.short_url
+                });
               }
-              res.json({
-                "original_url": urlSaved.original_url,
-                "short_url": urlSaved.short_url
-              });
+
             }); // addUrl.save()
           }); // Url.coundDocuments()
         } // add new url record block
