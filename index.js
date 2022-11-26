@@ -24,7 +24,7 @@ const Schema = mongoose.Schema;
 const urlSchema = new Schema ({
   original_url: {
     type: String,
-    required: true,
+    required: true
   },
   short_url: {
     type: Number,
@@ -40,16 +40,6 @@ let Url = mongoose.model("Url", urlSchema);
 app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
-
-// // Define a function that will format user input url to be sent to dns
-// const formatUrl = url => {
-
-//   let formattedUrl = url
-//     .replace(/^http[s]?:\/\//, '')
-//     .replace(/\/(.+)?/, '')
-
-//   return formattedUrl;
-// };
 
 // Handle post requests from user
 app.post('/api/shorturl', (req, res) => {
